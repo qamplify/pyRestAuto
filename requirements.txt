@@ -1,0 +1,7 @@
+requests
+beautifulsoup4
+json-digger
+nose
+robotframework-requests
+# https://github.com/Zaab1t/log
+log

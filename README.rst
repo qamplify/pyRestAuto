@@ -1,5 +1,7 @@
 pyRestAuto
 ==========
+[![codebeat badge](https://codebeat.co/badges/5a1193d5-7a47-4a1d-8a0e-a8cd93dbac34)](https://codebeat.co/projects/github-com-qaautomation-in-pyrestauto-master)
+
 Framework for automating WEBSERVICES (REST API's).
 
 #### Introduction

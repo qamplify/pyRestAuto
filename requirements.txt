@@ -5,3 +5,4 @@ nose
 robotframework-requests
 # https://github.com/Zaab1t/log
 log
+simplejson

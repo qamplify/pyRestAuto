@@ -5,6 +5,11 @@ class JsonParser(object):
         self.jdata = json_data
 
     def validate_json(self):
+        """
+        Checks if json is valid or not.
+        returns True if valid, else False
+        :return:
+        """
         pass
 
     def load_json_data(self):

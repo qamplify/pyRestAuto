@@ -1,3 +1,6 @@
+import requests
+
+
 
 class PyRestLib(object):
 
@@ -18,6 +21,7 @@ class PyRestLib(object):
         # 4. Read Response code in to a variable
         # 5. Read Http headers in to a variable (Data type TBD)
         # 6. Read Json data in to a variable
+
         pass
 
     def post_request(self, url, json_data, headers=None):

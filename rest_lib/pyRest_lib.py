@@ -1,7 +1,6 @@
 import requests
 
 
-
 class PyRestLib(object):
 
     def __init__(self):

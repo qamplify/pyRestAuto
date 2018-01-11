@@ -10,14 +10,15 @@ class Yamlparser():
         obj = Yamlparser(path)
     """
 
-    def __init__(self, file):
-        self.file = file
+    def __init__(self):
+        self.file = os.path.abspath('../resources/config.yaml')
+        # print (self.file)
 
     def get_data(self, root=None, branch=None):
         """
         This method is used to get data from yaml file.
-        :param root:
-        :param branch:
+        :param root: YAML file root name
+        :param branch: YAML branch name
         :return:
         """
         with open(self.file, 'r') as yamlfile:
@@ -27,5 +28,3 @@ class Yamlparser():
             else:
                 return data[branch]
 
-    def put_data(self):
-        pass

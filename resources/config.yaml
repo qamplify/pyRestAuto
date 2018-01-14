@@ -1,4 +1,16 @@
-url : 'http://127.0.0.1:5000'
-auth_type :
-username :
-password :
+# URL of system under test with ip/domain:port
+url : https://api.plivo.com/v1
+# Below are used for REST API authentication.. Note: Structure should not be modifie.
+
+auth : True
+# Auth type should be HTTPBasicAuth or HTTPDigestAuth
+auth_type : HTTPBasicAuth
+# Need to provide auth details as username,password
+auth_details : MAZJJMYZU5ODA2YZNKYZ,ZjBhYzkyMzFmNGY3N2JlNWFjYzgzYzIyZDU3Yzgz
+
+#Make rest_header when you want to send any custom headers
+# Need to add headers as
+headers:
+     "Content-Type": "application/json"
+
+

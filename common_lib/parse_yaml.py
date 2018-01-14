@@ -21,10 +21,17 @@ class Yamlparser():
         :param branch: YAML branch name
         :return:
         """
-        with open(self.file, 'r') as yamlfile:
-            data = yaml.load(yamlfile)
-            if root:
-                return data[root][branch]
-            else:
-                return data[branch]
+        try:
+            with open(self.file, 'r') as yamlfile:
+                data = yaml.load(yamlfile)
+                if root:
+                    return data[root][branch]
+                else:
+                    return data[branch]
+        except Exception as e:
+            print("Field {} is not present in the yaml file {}".format(branch,self.file))
 
+#
+# test = Yamlparser()
+# a=test.get_data(branch='auth_details')
+# print (a,type(a))

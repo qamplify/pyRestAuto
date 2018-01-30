@@ -1,6 +1,6 @@
 import requests
 import traceback
-from common_lib import parse_yaml, json_parser
+from common_lib import parse_yaml, json_parser, logger
 from requests.auth import HTTPDigestAuth, HTTPBasicAuth
 
 
@@ -8,12 +8,17 @@ class PyRestLib(object):
     response_timeout = None
     conf_obj = parse_yaml.Yamlparser()
     json_obj = json_parser.JsonParser()
+    log_obj = logger.Rest_Logger()
+    log = log_obj.get_logger('restLib')
+    yaml_data = conf_obj.get_data()
 
     def __init__(self):
-        self.url = self.conf_obj.get_data(branch='url')
-        self.auth = self.conf_obj.get_data(branch='auth')
-        self.auth_type = self.conf_obj.get_data(branch='auth_type')
-        self.auth_details = self.conf_obj.get_data(branch='auth_details')
+        self.log.info('************* Test started ************')
+        self.url = self.yaml_data['url']
+        self.auth = self.yaml_data['auth']
+        self.auth_type = self.yaml_data['auth_type']
+        self.username = self.yaml_data['auth_details']['username']
+        self.password = self.yaml_data['auth_details']['password']
 
     def send_request(self, path, parameters=None, method_name=None,
                      headers=None):
@@ -34,15 +39,15 @@ class PyRestLib(object):
                 response = self.__post_request(path, parameters=parameters)
                 return response
             elif method_name == 'PUT':
-                response = self.__update_request(path, parameters=parameters,
-                                                 headers=headers)
+                response = self.__update_request(path, parameters=parameters)
                 return response
 
             elif method_name == 'DELETE':
-                response = self.__delete_request(path, parameters=parameters)
+                response = self.__delete_request(path)
                 return response
             else:
-                return 'Method name should be GET/POST/PUT/DELETE. eg: method_name = "GET"'
+                return 'Method name should be GET/POST/PUT/DELETE. eg:' \
+                       ' method_name = "GET"'
 
         except Exception as e:
             print(e)
@@ -65,38 +70,44 @@ class PyRestLib(object):
             response = {}
             # Framing URL request.
             url_path = self.url + path
+            self.log.info('GET request URL is {}'.format(url_path))
+            self.log.info('GET request URL is {}'.format(url_path))
             # Checking authentication flog.
             if self.auth is True:
-                login = self.auth_details.split(',')
-                self.username = login[0]
-                self.password = login[1]
-                self.headers = self.conf_obj.get_data(branch="headers")
+                self.headers = self.yaml_data["headers"]
                 if self.auth_type == 'HTTPDigestAuth':
+                    self.log.info('Authentication type is HTTPDigestAuth')
                     res = requests.get(url_path, params=parameters,
-                                   headers=self.headers,
-                                   auth=HTTPDigestAuth(self.username,
-                                                       self.password))
+                                       headers=self.headers,
+                                       auth=HTTPDigestAuth(self.username,
+                                                           self.password))
                 elif self.auth_type == 'HTTPBasicAuth':
+                    self.log.info('Authentication type is HTTPBasicAuth')
                     res = requests.get(url_path, params=parameters,
-                                   headers=self.headers,
-                                   auth=HTTPBasicAuth(self.username,
-                                                      self.password))
+                                       headers=self.headers,
+                                       auth=HTTPBasicAuth(self.username,
+                                                          self.password))
             else:
                 res = requests.get(url_path, params=parameters,
                                    headers=self.headers)
             res_status_code = res.status_code
             res_data = res.text
             res_headers = res.headers
+            self.log.info(
+                'Received response code is {}'.format(res_status_code))
+            self.log.info('Received response data is {}'.format(res_data))
+            self.log.debug(
+                'Received response headers is {}'.format(res_headers))
             response['status_code'] = res_status_code
             rest_data = self.json_obj.load_json_data(str(res_data))
             response['response_data'] = rest_data
             response['headers'] = res_headers
             # Returning GET request status code, data and headers.
-            return res_status_code,rest_data,res_headers
+            return res_status_code, rest_data, res_headers
 
         except Exception as e:
-            print("GET request {} Failed with exception {}".format(url_path,e))
-            traceback.print_exc()
+            self.log.exception(
+                "GET request {} Failed with exception {}".format(url_path, e))
 
     def __post_request(self, path, parameters=None):
         """
@@ -115,27 +126,24 @@ class PyRestLib(object):
         try:
             response = {}
             url_path = self.url + path
-            self.headers = self.conf_obj.get_data(branch="headers")
+            self.log.info('POST request URL is {}'.format(url_path))
+            self.headers = self.yaml_data["headers"]
             # Checking authentication flag to send auth details.
             if self.auth is True:
-                # Getting authentication credentials from YAML config file.
-                login = self.auth_details.split(',')
-                self.username = login[0]
-                self.password = login[1]
-            if self.auth_type == 'HTTPDigestAuth':
-                res = requests.post(url_path, data=parameters,
-                                    headers=self.headers,
-                                   auth=HTTPDigestAuth(self.username,
-                                                       self.password))
-            elif self.auth_type == 'HTTPBasicAuth':
+                if self.auth_type == 'HTTPDigestAuth':
+                    res = requests.post(url_path, data=parameters,
+                                        headers=self.headers,
+                                        auth=HTTPDigestAuth(self.username,
+                                                            self.password))
+                elif self.auth_type == 'HTTPBasicAuth':
                     self.json_data = self.json_obj.dump_json_data(parameters)
                     res = requests.post(url_path, data=self.json_data,
-                                   headers=self.headers,
-                                   auth=HTTPBasicAuth(self.username,
-                                                      self.password))
-            else:
-                res = requests.post(url_path, data=parameters,
-                               headers=self.headers)
+                                        headers=self.headers,
+                                        auth=HTTPBasicAuth(self.username,
+                                                           self.password))
+                else:
+                    res = requests.post(url_path, data=parameters,
+                                        headers=self.headers)
             res_status_code = res.status_code
             res_data = res.text
             res_headers = res.headers
@@ -147,14 +155,90 @@ class PyRestLib(object):
             return res_status_code, rest_data, res_headers
 
         except Exception as e:
-            print("POST request {} Failed with exception {}".format(url_path, e))
+            print("POST request {} Failed with exception "
+                  "{}".format(url_path, e))
             traceback.print_exc()
 
-    def __delete_request(self):
-        return
+    def __delete_request(self, path):
+        try:
+            response = {}
+            # Framing URL request.
+            url_path = self.url + path
+            self.log.info('DElETE request URL is {}'.format(url_path))
+            # Checking authentication flog.
+            if self.auth is True:
+                login = self.auth_details.split(',')
+                self.username = login[0]
+                self.password = login[1]
+                self.headers = self.conf_obj.get_data(branch="headers")
+                if self.auth_type == 'HTTPDigestAuth':
+                    res = requests.delete(url_path,
+                                          headers=self.headers,
+                                          auth=HTTPDigestAuth(self.username,
+                                                              self.password))
+                elif self.auth_type == 'HTTPBasicAuth':
+                    res = requests.delete(url_path,
+                                          auth=HTTPBasicAuth(self.username,
+                                                             self.password))
+            else:
+                res = requests.delete(url_path,
+                                      headers=self.headers)
+            res_status_code = res.status_code
+            res_data = res.text
+            res_headers = res.headers
+            response['status_code'] = res_status_code
+            if res_data:
+                rest_data = self.json_obj.load_json_data(str(res_data))
+            else:
+                rest_data = 'Empty data received'
+            response['response_data'] = rest_data
+            response['headers'] = res_headers
+            # Returning GET request status code, data and headers.
+            return res_status_code, rest_data, res_headers
 
-    def __update_request(self):
-        return
+        except Exception as e:
+            print("DELETE request {} Failed with exception "
+                  "{}".format(url_path, e))
+            traceback.print_exc()
+
+    def __update_request(self, path, parameters=None):
+        try:
+            response = {}
+            url_path = self.url + path
+            self.headers = self.conf_obj.get_data(branch="headers")
+            # Checking authentication flag to send auth details.
+            if self.auth is True:
+                # Getting authentication credentials from YAML config file.
+                login = self.auth_details.split(',')
+                self.username = login[0]
+                self.password = login[1]
+            if self.auth_type == 'HTTPDigestAuth':
+                res = requests.put(url_path, data=parameters,
+                                   headers=self.headers,
+                                   auth=HTTPDigestAuth(self.username,
+                                                       self.password))
+            elif self.auth_type == 'HTTPBasicAuth':
+                self.json_data = self.json_obj.dump_json_data(parameters)
+                res = requests.put(url_path, data=self.json_data,
+                                   headers=self.headers,
+                                   auth=HTTPBasicAuth(self.username,
+                                                      self.password))
+            else:
+                res = requests.put(url_path, data=parameters,
+                                   headers=self.headers)
+            res_status_code = res.status_code
+            res_data = res.text
+            res_headers = res.headers
+            response['status_code'] = res_status_code
+            rest_data = self.json_obj.load_json_data(str(res_data))
+            response['response_data'] = rest_data
+            response['headers'] = res_headers
+            # Returning response status code, data and headers
+            return res_status_code, rest_data, res_headers
+
+        except Exception as e:
+            print("PUT request {}Failed with exception {}".format(url_path, e))
+            traceback.print_exc()
 
     def create_session(self):
         """
@@ -163,6 +247,7 @@ class PyRestLib(object):
         """
         pass
 
+    # This method is not requeired
     def __http_basic_auth(self, user, password):
         """
         creates a

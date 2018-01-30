@@ -10,11 +10,13 @@ class Yamlparser():
         obj = Yamlparser(path)
     """
 
-    def __init__(self):
-        self.file = os.path.abspath('../resources/config.yaml')
-        # print (self.file)
+    def __init__(self, filename=None):
+        if filename:
+            self.file = filename
+        else:
+            self.file = os.path.abspath('../resources/config.yaml')
 
-    def get_data(self, root=None, branch=None):
+    def get_data(self):
         """
         This method is used to get data from yaml file.
         :param root: YAML file root name
@@ -24,14 +26,11 @@ class Yamlparser():
         try:
             with open(self.file, 'r') as yamlfile:
                 data = yaml.load(yamlfile)
-                if root:
-                    return data[root][branch]
-                else:
-                    return data[branch]
+                return data
         except Exception as e:
-            print("Field {} is not present in the yaml file {}".format(branch,self.file))
+            print("Error occured in configuration file {}".format(self.file))
 
-#
+
 # test = Yamlparser()
 # a=test.get_data(branch='auth_details')
 # print (a,type(a))

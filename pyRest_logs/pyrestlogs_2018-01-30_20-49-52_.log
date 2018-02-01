@@ -1,0 +1,8 @@
+2018-01-30 20:49:52,776 - restLib - INFO - ************* Test started ************
+************* Test started ************
+2018-01-30 20:49:52,777 - restLib - INFO - POST request URL is https://api.plivo.com/v1/Account/MAZJJMYZU5ODA2YZNKYZ/Subaccount/
+POST request URL is https://api.plivo.com/v1/Account/MAZJJMYZU5ODA2YZNKYZ/Subaccount/
+2018-01-30 20:49:54,283 - UnitTest - INFO - This is testing
+This is testing
+2018-01-30 20:49:54,284 - UnitTest - INFO - {'api_id': 'c4d934d0-05d1-11e8-a48f-0690e0a5d434', 'error': {'error': 'Subaccount of same name exists'}}
+{'api_id': 'c4d934d0-05d1-11e8-a48f-0690e0a5d434', 'error': {'error': 'Subaccount of same name exists'}}

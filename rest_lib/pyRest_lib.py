@@ -167,10 +167,7 @@ class PyRestLib(object):
             self.log.info('DElETE request URL is {}'.format(url_path))
             # Checking authentication flog.
             if self.auth is True:
-                login = self.auth_details.split(',')
-                self.username = login[0]
-                self.password = login[1]
-                self.headers = self.conf_obj.get_data(branch="headers")
+                self.headers = self.yaml_data["headers"]
                 if self.auth_type == 'HTTPDigestAuth':
                     res = requests.delete(url_path,
                                           headers=self.headers,
@@ -208,10 +205,7 @@ class PyRestLib(object):
             self.headers = self.conf_obj.get_data(branch="headers")
             # Checking authentication flag to send auth details.
             if self.auth is True:
-                # Getting authentication credentials from YAML config file.
-                login = self.auth_details.split(',')
-                self.username = login[0]
-                self.password = login[1]
+                self.headers = self.yaml_data["headers"]
             if self.auth_type == 'HTTPDigestAuth':
                 res = requests.put(url_path, data=parameters,
                                    headers=self.headers,

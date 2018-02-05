@@ -2,6 +2,8 @@ import requests
 import traceback
 from common_lib import parse_yaml, json_parser, logger
 from requests.auth import HTTPDigestAuth, HTTPBasicAuth
+from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
+from pathlib import Path
 
 
 class PyRestLib(object):
@@ -20,8 +22,8 @@ class PyRestLib(object):
         self.username = self.yaml_data['auth_details']['username']
         self.password = self.yaml_data['auth_details']['password']
 
-    def send_request(self, path, parameters=None, method_name=None,
-                     headers=None):
+    def send_request(self, path, parameters=None, method_name=None,file_path=
+                     None):
         """
         :param path: url path
         :param parameters: Request parameters
@@ -34,14 +36,13 @@ class PyRestLib(object):
             if method_name == 'GET':
                 response = self.__get_request(path, parameters=parameters)
                 return response
-
             elif method_name == 'POST':
-                response = self.__post_request(path, parameters=parameters)
+                response = self.__post_request(path, parameters=parameters,
+                                               file_paths=file_path)
                 return response
             elif method_name == 'PUT':
                 response = self.__update_request(path, parameters=parameters)
                 return response
-
             elif method_name == 'DELETE':
                 response = self.__delete_request(path)
                 return response
@@ -109,7 +110,7 @@ class PyRestLib(object):
             self.log.exception(
                 "GET request {} Failed with exception {}".format(url_path, e))
 
-    def __post_request(self, path, parameters=None):
+    def __post_request(self, path, parameters=None,file_paths=None):
         """
         Posts the request to defined url.
         :param path: path for get request api
@@ -124,6 +125,12 @@ class PyRestLib(object):
         # 5. Read Response code in to a variable (Data type TBD)
         # 6. Read Http headers in to another variable
         try:
+            # headers = self.headers
+            # Adding files to POST parameters
+            if file_paths:
+                upload_data = self.__upload_files(parameters,file_paths)
+                self.headers ['Content-Type'] = upload_data.content_type
+                parameters = upload_data
             response = {}
             url_path = self.url + path
             self.log.info('POST request URL is {}'.format(url_path))
@@ -158,6 +165,10 @@ class PyRestLib(object):
             print("POST request {} Failed with exception "
                   "{}".format(url_path, e))
             traceback.print_exc()
+        except FileNotFoundError as fe:
+            print("POST request {} Failed with File not found "
+                  "{}".format(url_path, fe))
+
 
     def __delete_request(self, path):
         try:
@@ -240,6 +251,17 @@ class PyRestLib(object):
         :return:
         """
         pass
+
+    def __upload_files(self,params,filenames):
+        if filenames:
+            for i in range(len(filenames)):
+                file = Path(filenames[i])
+                if file.exists():
+                    params['file' + str(i)] = (filenames[i],
+                                               open(filenames[i], 'rb'))
+            encoded_data = MultipartEncoderMonitor(params)
+            return encoded_data
+
 
     # This method is not requeired
     def __http_basic_auth(self, user, password):

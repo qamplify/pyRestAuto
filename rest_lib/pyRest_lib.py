@@ -14,20 +14,24 @@ class PyRestLib(object):
     log = log_obj.get_logger('restLib')
     yaml_data = conf_obj.get_data()
 
-    def __init__(self):
-        self.log.info('************* Test started ************')
-        self.url = self.yaml_data['url']
+    def __init__(self,url=None):
+        # self.log.info('************* Test started ************')
+        if url:
+            self.url = url
+        else:
+            self.url = self.yaml_data['url']
         self.auth = self.yaml_data['auth']
         self.auth_type = self.yaml_data['auth_type']
         self.username = self.yaml_data['auth_details']['username']
         self.password = self.yaml_data['auth_details']['password']
 
-    def send_request(self, path, parameters=None, method_name=None,file_path=
-                     None):
+    def send_request(self, path, parameters=None, method_name=None,
+                     file_path=None):
         """
         :param path: url path
         :param parameters: Request parameters
         :param method_name: method name (GET,POST,PUT,DELETE)
+        :param file_path: upload file paths
 
         :return: This function returns response details
         """
@@ -71,8 +75,8 @@ class PyRestLib(object):
             response = {}
             # Framing URL request.
             url_path = self.url + path
-            self.log.info('GET request URL is {}'.format(url_path))
-            self.log.info('GET request URL is {}'.format(url_path))
+            self.log.info('************* GET request URL is {} ************'
+                          '*'.format(url_path))
             # Checking authentication flog.
             if self.auth is True:
                 self.headers = self.yaml_data["headers"]
@@ -99,12 +103,14 @@ class PyRestLib(object):
             self.log.info('Received response data is {}'.format(res_data))
             self.log.debug(
                 'Received response headers is {}'.format(res_headers))
-            response['status_code'] = res_status_code
-            rest_data = self.json_obj.load_json_data(str(res_data))
-            response['response_data'] = rest_data
+            self.log.info('*************----END----*************')
+            response['code'] = res_status_code
+            # rest_data = self.json_obj.load_json_data(str(res_data))
+            response['data'] = res_data
             response['headers'] = res_headers
             # Returning GET request status code, data and headers.
-            return res_status_code, rest_data, res_headers
+            # return res_status_code, rest_data, res_headers
+            return response
 
         except Exception as e:
             self.log.exception(
@@ -133,7 +139,8 @@ class PyRestLib(object):
                 parameters = upload_data
             response = {}
             url_path = self.url + path
-            self.log.info('POST request URL is {}'.format(url_path))
+            self.log.info('*************  POST request URL is {}  '
+                          '*************'.format(url_path))
             self.headers = self.yaml_data["headers"]
             # Checking authentication flag to send auth details.
             if self.auth is True:
@@ -154,12 +161,19 @@ class PyRestLib(object):
             res_status_code = res.status_code
             res_data = res.text
             res_headers = res.headers
-            response['status_code'] = res_status_code
-            rest_data = self.json_obj.load_json_data(str(res_data))
-            response['response_data'] = rest_data
+            self.log.info(
+                'Received response code is {}'.format(res_status_code))
+            self.log.info('Received response data is {}'.format(res_data))
+            self.log.debug(
+                'Received response headers is {}'.format(res_headers))
+            self.log.info('*************----END----*************')
+            response['code'] = res_status_code
+            # rest_data = self.json_obj.load_json_data(str(res_data))
+            response['data'] = res_data
             response['headers'] = res_headers
             # Returning response status code, data and headers
-            return res_status_code, rest_data, res_headers
+            # return res_status_code, rest_data, res_headers
+            return response
 
         except Exception as e:
             print("POST request {} Failed with exception "
@@ -175,7 +189,8 @@ class PyRestLib(object):
             response = {}
             # Framing URL request.
             url_path = self.url + path
-            self.log.info('DElETE request URL is {}'.format(url_path))
+            self.log.info('************* DElETE request URL is {}  '
+                          '*************'.format(url_path))
             # Checking authentication flog.
             if self.auth is True:
                 self.headers = self.yaml_data["headers"]
@@ -194,15 +209,22 @@ class PyRestLib(object):
             res_status_code = res.status_code
             res_data = res.text
             res_headers = res.headers
-            response['status_code'] = res_status_code
-            if res_data:
-                rest_data = self.json_obj.load_json_data(str(res_data))
-            else:
-                rest_data = 'Empty data received'
-            response['response_data'] = rest_data
+            response['code'] = res_status_code
+            # if res_data:
+            #     rest_data = self.json_obj.load_json_data(str(res_data))
+            # else:
+            #     rest_data = 'Empty data received'
+            response['data'] = res_data
             response['headers'] = res_headers
+            self.log.info(
+                'Received response code is {}'.format(res_status_code))
+            self.log.info('Received response data is {}'.format(res_data))
+            self.log.debug(
+                'Received response headers is {}'.format(res_headers))
             # Returning GET request status code, data and headers.
-            return res_status_code, rest_data, res_headers
+            # return res_status_code, rest_data, res_headers
+            self.log.info('*************----END----*************')
+            return response
 
         except Exception as e:
             print("DELETE request {} Failed with exception "
@@ -213,7 +235,9 @@ class PyRestLib(object):
         try:
             response = {}
             url_path = self.url + path
-            self.headers = self.conf_obj.get_data(branch="headers")
+            self.headers = self.yaml_data["headers"]
+            self.log.info('*************PUT request URL is {} '
+                          '*************'.format(url_path))
             # Checking authentication flag to send auth details.
             if self.auth is True:
                 self.headers = self.yaml_data["headers"]
@@ -234,15 +258,23 @@ class PyRestLib(object):
             res_status_code = res.status_code
             res_data = res.text
             res_headers = res.headers
-            response['status_code'] = res_status_code
-            rest_data = self.json_obj.load_json_data(str(res_data))
-            response['response_data'] = rest_data
+            response['code'] = res_status_code
+            # rest_data = self.json_obj.load_json_data(str(res_data))
+            response['data'] = res_data
             response['headers'] = res_headers
             # Returning response status code, data and headers
-            return res_status_code, rest_data, res_headers
+            self.log.info(
+                'Received response code is {}'.format(res_status_code))
+            self.log.info('Received response data is {}'.format(res_data))
+            self.log.debug(
+                'Received response headers is {}'.format(res_headers))
+            # return res_status_code, rest_data, res_headers
+            self.log.info('*************----END----*************')
+            return response
 
         except Exception as e:
-            print("PUT request {}Failed with exception {}".format(url_path, e))
+            self.log.error("PUT request {}Failed with exception "
+                           "{}".format(url_path, e))
             traceback.print_exc()
 
     def create_session(self):
@@ -253,6 +285,7 @@ class PyRestLib(object):
         pass
 
     def __upload_files(self,params,filenames):
+        self.log.info('************* Uploading files  *************')
         if filenames:
             for i in range(len(filenames)):
                 file = Path(filenames[i])

@@ -14,7 +14,7 @@ class Yamlparser():
         if filename:
             self.file = filename
         else:
-            self.file = os.path.abspath('../resources/config.yaml')
+            self.file = os.path.abspath('../pyRestAuto/resources/config.yaml')
 
     def get_data(self):
         """
@@ -28,7 +28,7 @@ class Yamlparser():
                 data = yaml.load(yamlfile)
                 return data
         except Exception as e:
-            print("Error occured in configuration file {}".format(self.file))
+            print("Error {} occurred in configuration file {}".format(e,self.file))
 
 
 # test = Yamlparser()

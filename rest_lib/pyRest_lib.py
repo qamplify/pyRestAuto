@@ -55,7 +55,8 @@ class PyRestLib(object):
                        ' method_name = "GET"'
 
         except Exception as e:
-            print(e)
+            self.log.exception('Got exception in sendrequest method '
+                               '{}'.format(e))
 
     def __get_request(self, path, parameters=None):
         """ Sending GET request.
@@ -133,15 +134,17 @@ class PyRestLib(object):
         try:
             # headers = self.headers
             # Adding files to POST parameters
+            self.headers = self.yaml_data["headers"]
             if file_paths:
                 upload_data = self.__upload_files(parameters,file_paths)
                 self.headers ['Content-Type'] = upload_data.content_type
                 parameters = upload_data
+            self.log.info('Parameters are {}'.format(parameters))
             response = {}
             url_path = self.url + path
             self.log.info('*************  POST request URL is {}  '
                           '*************'.format(url_path))
-            self.headers = self.yaml_data["headers"]
+
             # Checking authentication flag to send auth details.
             if self.auth is True:
                 if self.auth_type == 'HTTPDigestAuth':
@@ -150,8 +153,8 @@ class PyRestLib(object):
                                         auth=HTTPDigestAuth(self.username,
                                                             self.password))
                 elif self.auth_type == 'HTTPBasicAuth':
-                    self.json_data = self.json_obj.dump_json_data(parameters)
-                    res = requests.post(url_path, data=self.json_data,
+                    # self.json_data = self.json_obj.dump_json_data(parameters)
+                    res = requests.post(url_path, data=parameters,
                                         headers=self.headers,
                                         auth=HTTPBasicAuth(self.username,
                                                            self.password))
@@ -176,11 +179,11 @@ class PyRestLib(object):
             return response
 
         except Exception as e:
-            print("POST request {} Failed with exception "
+            self.log.exception("POST request {} Failed with exception "
                   "{}".format(url_path, e))
             traceback.print_exc()
         except FileNotFoundError as fe:
-            print("POST request {} Failed with File not found "
+            self.log.exception("POST request {} Failed with File not found "
                   "{}".format(url_path, fe))
 
 
@@ -227,7 +230,7 @@ class PyRestLib(object):
             return response
 
         except Exception as e:
-            print("DELETE request {} Failed with exception "
+            self.log.exception("DELETE request {} Failed with exception "
                   "{}".format(url_path, e))
             traceback.print_exc()
 
@@ -273,7 +276,7 @@ class PyRestLib(object):
             return response
 
         except Exception as e:
-            self.log.error("PUT request {}Failed with exception "
+            self.log.exception("PUT request {}Failed with exception "
                            "{}".format(url_path, e))
             traceback.print_exc()
 
@@ -285,16 +288,21 @@ class PyRestLib(object):
         pass
 
     def __upload_files(self,params,filenames):
-        self.log.info('************* Uploading files  *************')
-        if filenames:
-            for i in range(len(filenames)):
-                file = Path(filenames[i])
-                if file.exists():
-                    params['file' + str(i)] = (filenames[i],
-                                               open(filenames[i], 'rb'))
-            encoded_data = MultipartEncoderMonitor(params)
-            return encoded_data
-
+        try:
+            self.log.info('Uploading file/s {}'.format(filenames))
+            if params is None:
+                params = {}
+            if filenames:
+                for i in range(len(filenames)):
+                    file = Path(filenames[i])
+                    if file.exists():
+                        params['file'+str(i)] = (filenames[i], open(filenames[i],'rb'))
+            encoded_data = MultipartEncoder(params)
+            upload_data = MultipartEncoderMonitor(encoded_data)
+            return upload_data
+        except Exception as e:
+            self.log.exception(
+                "Got Exception when uploading file {}".format(e))
 
     # This method is not requeired
     def __http_basic_auth(self, user, password):

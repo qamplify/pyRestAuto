@@ -16,7 +16,7 @@ class Rest_Logger():
                   'CRITICAL': 50, 'OFF': 0}
 
     def __init__(self):
-        # Getting log_type, creating filename and log formt
+        # Getting log_type, creating filename and log format
         self.log_level = self.log_levels[self.yaml_data['log_level']]
         self.dir = self.yaml_data['log_directory']
         if self.dir:
@@ -25,13 +25,14 @@ class Rest_Logger():
             self.filename = self.dir+str(self.tf)+'.log'
             self.file = os.path.abspath(self.filename)
         else:
-            self.filename = '../pyRest_logs/pyrestlogs_'+str(self.tf)+'.log'
+            self.filename = '../pyRestAuto/pyRest_logs/pyrestlogs_'+str(self.tf)+'.log'
             self.file = os.path.abspath(self.filename)
         self.log_format = '%(asctime)s - %(name)s - %(levelname)s - ' \
                           '%(message)s'
 
     def get_logger(self, name):
         try:
+            print(name)
             self.logger = logging.getLogger(name)
             self.logger.setLevel(self.log_level)
             # create file handler which logs even debug messages
@@ -53,4 +54,4 @@ class Rest_Logger():
             self.logger.addHandler(rh)
             return self.logger
         except Exception as e:
-            self.logger.exception("Error occured in logger function")
+            self.logger.exception("Error occured in logger function {}".format(e))

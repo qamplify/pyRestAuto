@@ -7,3 +7,4 @@ robotframework-requests
 log
 simplejson
 pyyaml
+pytest

@@ -8,3 +8,4 @@ log
 simplejson==3.13.2
 pyyaml==3.12
 pytest-html==1.16.1
+requests-toolbelt==0.8.0

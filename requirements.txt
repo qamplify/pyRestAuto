@@ -1,6 +1,6 @@
-requests
+requests==2.18.4
 beautifulsoup4
-json-digger
+json-digger==0.2
 nose
 robotframework-requests
 # https://github.com/Zaab1t/log
@@ -8,3 +8,6 @@ log
 simplejson
 pyyaml
 pytest
+simplejson==3.13.2
+pyyaml==3.12
+pytest-html==1.16.1

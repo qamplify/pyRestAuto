@@ -5,7 +5,6 @@ nose
 robotframework-requests
 # https://github.com/Zaab1t/log
 log
-simplejson
 pyyaml
 pytest
 simplejson==3.13.2

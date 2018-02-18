@@ -19,14 +19,20 @@ class Rest_Logger():
         # Getting log_type, creating filename and log format
         self.log_level = self.log_levels[self.yaml_data['log_level']]
         self.dir = self.yaml_data['log_directory']
+        # Checking and creating dir if not present
         if self.dir:
             if not os.path.exists(self.dir):
                 os.makedirs(self.dir)
             self.filename = self.dir+str(self.tf)+'.log'
             self.file = os.path.abspath(self.filename)
         else:
-            self.filename = '../pyRestAuto/pyRest_logs/pyrestlogs_'+str(self.tf)+'.log'
+            # Checking and creating pyRest_logs dir if not present
+            self.dir1 = os.path.abspath('../pyRestAuto/pyRest_logs/')
+            if not os.path.exists(self.dir1):
+                os.makedirs(self.dir1)
+            self.filename = self.dir1+'/pyrestlogs_'+str(self.tf)+'.log'
             self.file = os.path.abspath(self.filename)
+            print(self.file)
         self.log_format = '%(asctime)s - %(name)s - %(levelname)s - ' \
                           '%(message)s'
 

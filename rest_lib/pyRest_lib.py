@@ -6,6 +6,7 @@ from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 from pathlib import Path
 
 
+
 class PyRestLib(object):
     response_timeout = None
     conf_obj = parse_yaml.Yamlparser()
@@ -25,8 +26,30 @@ class PyRestLib(object):
         self.username = self.yaml_data['auth_details']['username']
         self.password = self.yaml_data['auth_details']['password']
 
-    def send_request(self, path, parameters=None, method_name=None,
-                     file_path=None):
+    def upload_data(self, path,**args):
+        """ Send request with single or multiple file uploads
+
+        :param path: URL request path
+        :param \*\*args: arguments for POST parameters and file names
+        :rtype: response
+        """
+
+        try:
+            if 'file_path' in args:
+                file_paths = args['file_path']
+            else:
+                file_paths = None
+            if 'parameters' in args:
+                param = args['parameters']
+            else:
+                param = None
+            response = self.__post_request(path,parameters=param,
+                                       file_paths=file_paths)
+            return response
+        except Exception as e:
+            self.log.exception('Got exception in upload request {}'.format(e))
+
+    def send_request(self, path, parameters=None, method_name=None):
         """
         :param path: url path
         :param parameters: Request parameters
@@ -41,8 +64,7 @@ class PyRestLib(object):
                 response = self.__get_request(path, parameters=parameters)
                 return response
             elif method_name == 'POST':
-                response = self.__post_request(path, parameters=parameters,
-                                               file_paths=file_path)
+                response = self.__post_request(path, parameters=parameters)
                 return response
             elif method_name == 'PUT':
                 response = self.__update_request(path, parameters=parameters)
@@ -144,6 +166,7 @@ class PyRestLib(object):
             url_path = self.url + path
             self.log.info('*************  POST request URL is {}  '
                           '*************'.format(url_path))
+
 
             # Checking authentication flag to send auth details.
             if self.auth is True:
@@ -296,7 +319,8 @@ class PyRestLib(object):
                 for i in range(len(filenames)):
                     file = Path(filenames[i])
                     if file.exists():
-                        params['file'+str(i)] = (filenames[i], open(filenames[i],'rb'))
+                        params['file'+str(i)] = (filenames[i],
+                                                 open(filenames[i],'rb'))
             encoded_data = MultipartEncoder(params)
             upload_data = MultipartEncoderMonitor(encoded_data)
             return upload_data

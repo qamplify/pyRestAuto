@@ -22,7 +22,17 @@ log_filesize:
 #Make rest_header when you want to send any custom headers
 # Need to add headers as
 headers:
-     "Content-Type": "application/json"
+  "Content-Type": "application/json"
+
+
+# Sessions(Cookie), Cookies will be sent automatically in all subsequent
+#   requestswhen session is True
+cookie_header:
+  "x-test": "true"
+  "x-test1": "This is testing cookie"
+cookie_auth:
+  username: 'user'
+  password: 'password'
 
 
 

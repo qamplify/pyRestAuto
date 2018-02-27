@@ -6,6 +6,7 @@ from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 from pathlib import Path
 
 
+
 class PyRestLib(object):
     response_timeout = None
     conf_obj = parse_yaml.Yamlparser()
@@ -13,6 +14,7 @@ class PyRestLib(object):
     log_obj = logger.Rest_Logger()
     log = log_obj.get_logger('restLib')
     yaml_data = conf_obj.get_data()
+    session = False
 
     def __init__(self,url=None):
         # self.log.info('************* Test started ************')
@@ -25,8 +27,30 @@ class PyRestLib(object):
         self.username = self.yaml_data['auth_details']['username']
         self.password = self.yaml_data['auth_details']['password']
 
-    def send_request(self, path, parameters=None, method_name=None,
-                     file_path=None):
+    def upload_data(self, path,**args):
+        """ Send request with single or multiple file uploads
+
+        :param path: URL request path
+        :param \*\*args: arguments for POST parameters and file names
+        :rtype: response
+        """
+
+        try:
+            if 'file_path' in args:
+                file_paths = args['file_path']
+            else:
+                file_paths = None
+            if 'parameters' in args:
+                param = args['parameters']
+            else:
+                param = None
+            response = self.__post_request(path,parameters=param,
+                                       file_paths=file_paths)
+            return response
+        except Exception as e:
+            self.log.exception('Got exception in upload request {}'.format(e))
+
+    def send_request(self, path, parameters=None, method_name=None):
         """
         :param path: url path
         :param parameters: Request parameters
@@ -41,8 +65,7 @@ class PyRestLib(object):
                 response = self.__get_request(path, parameters=parameters)
                 return response
             elif method_name == 'POST':
-                response = self.__post_request(path, parameters=parameters,
-                                               file_paths=file_path)
+                response = self.__post_request(path, parameters=parameters)
                 return response
             elif method_name == 'PUT':
                 response = self.__update_request(path, parameters=parameters)
@@ -73,6 +96,10 @@ class PyRestLib(object):
         # 6. Read Json data in to a variable
 
         try:
+            if self.session:
+                req = self.__create_session()
+            else:
+                req = requests
             response = {}
             # Framing URL request.
             url_path = self.url + path
@@ -83,18 +110,18 @@ class PyRestLib(object):
                 self.headers = self.yaml_data["headers"]
                 if self.auth_type == 'HTTPDigestAuth':
                     self.log.info('Authentication type is HTTPDigestAuth')
-                    res = requests.get(url_path, params=parameters,
+                    res = req.get(url_path, params=parameters,
                                        headers=self.headers,
                                        auth=HTTPDigestAuth(self.username,
                                                            self.password))
                 elif self.auth_type == 'HTTPBasicAuth':
                     self.log.info('Authentication type is HTTPBasicAuth')
-                    res = requests.get(url_path, params=parameters,
+                    res = req.get(url_path, params=parameters,
                                        headers=self.headers,
                                        auth=HTTPBasicAuth(self.username,
                                                           self.password))
             else:
-                res = requests.get(url_path, params=parameters,
+                res = req.get(url_path, params=parameters,
                                    headers=self.headers)
             res_status_code = res.status_code
             res_data = res.text
@@ -132,6 +159,10 @@ class PyRestLib(object):
         # 5. Read Response code in to a variable (Data type TBD)
         # 6. Read Http headers in to another variable
         try:
+            if self.session:
+                req = self.__create_session()
+            else:
+                req = requests
             # headers = self.headers
             # Adding files to POST parameters
             self.headers = self.yaml_data["headers"]
@@ -145,21 +176,22 @@ class PyRestLib(object):
             self.log.info('*************  POST request URL is {}  '
                           '*************'.format(url_path))
 
+
             # Checking authentication flag to send auth details.
             if self.auth is True:
                 if self.auth_type == 'HTTPDigestAuth':
-                    res = requests.post(url_path, data=parameters,
+                    res = req.post(url_path, data=parameters,
                                         headers=self.headers,
                                         auth=HTTPDigestAuth(self.username,
                                                             self.password))
                 elif self.auth_type == 'HTTPBasicAuth':
                     # self.json_data = self.json_obj.dump_json_data(parameters)
-                    res = requests.post(url_path, data=parameters,
+                    res = req.post(url_path, data=parameters,
                                         headers=self.headers,
                                         auth=HTTPBasicAuth(self.username,
                                                            self.password))
                 else:
-                    res = requests.post(url_path, data=parameters,
+                    res = req.post(url_path, data=parameters,
                                         headers=self.headers)
             res_status_code = res.status_code
             res_data = res.text
@@ -189,6 +221,10 @@ class PyRestLib(object):
 
     def __delete_request(self, path):
         try:
+            if self.session:
+                req = self.__create_session()
+            else:
+                req = requests
             response = {}
             # Framing URL request.
             url_path = self.url + path
@@ -198,16 +234,16 @@ class PyRestLib(object):
             if self.auth is True:
                 self.headers = self.yaml_data["headers"]
                 if self.auth_type == 'HTTPDigestAuth':
-                    res = requests.delete(url_path,
+                    res = req.delete(url_path,
                                           headers=self.headers,
                                           auth=HTTPDigestAuth(self.username,
                                                               self.password))
                 elif self.auth_type == 'HTTPBasicAuth':
-                    res = requests.delete(url_path,
+                    res = req.delete(url_path,
                                           auth=HTTPBasicAuth(self.username,
                                                              self.password))
             else:
-                res = requests.delete(url_path,
+                res = req.delete(url_path,
                                       headers=self.headers)
             res_status_code = res.status_code
             res_data = res.text
@@ -236,6 +272,10 @@ class PyRestLib(object):
 
     def __update_request(self, path, parameters=None):
         try:
+            if self.session:
+                req = self.__create_session()
+            else:
+                req = requests
             response = {}
             url_path = self.url + path
             self.headers = self.yaml_data["headers"]
@@ -245,18 +285,18 @@ class PyRestLib(object):
             if self.auth is True:
                 self.headers = self.yaml_data["headers"]
             if self.auth_type == 'HTTPDigestAuth':
-                res = requests.put(url_path, data=parameters,
+                res = req.put(url_path, data=parameters,
                                    headers=self.headers,
                                    auth=HTTPDigestAuth(self.username,
                                                        self.password))
             elif self.auth_type == 'HTTPBasicAuth':
                 self.json_data = self.json_obj.dump_json_data(parameters)
-                res = requests.put(url_path, data=self.json_data,
+                res = req.put(url_path, data=self.json_data,
                                    headers=self.headers,
                                    auth=HTTPBasicAuth(self.username,
                                                       self.password))
             else:
-                res = requests.put(url_path, data=parameters,
+                res = req.put(url_path, data=parameters,
                                    headers=self.headers)
             res_status_code = res.status_code
             res_data = res.text
@@ -280,12 +320,29 @@ class PyRestLib(object):
                            "{}".format(url_path, e))
             traceback.print_exc()
 
-    def create_session(self):
+    def __create_session(self):
         """
         Create a Session and hold that in an instance/object variable.
-        :return:
+        :return: request cookie object
         """
-        pass
+
+        try:
+            # Getting session parameter from config.yaml file
+            sess = requests.Session()
+            # Getting authentication & cookie header details from config
+            auth_user = self.yaml_data['cookie_auth']['username']
+            auth_pass = self.yaml_data['cookie_auth']['password']
+            cookie_headers = self.yaml_data['cookie_header']
+            if auth_user :
+                # Adding session authentication details
+                sess.auth = (auth_user, auth_pass)
+            if cookie_headers:
+                # Updating headers with cookie headers
+                sess.headers.update(cookie_headers)
+            return sess
+        except Exception as e:
+            self.log.exception('Got exception in session obj creation'
+                               '{}'.format(e))
 
     def __upload_files(self,params,filenames):
         try:
@@ -296,7 +353,8 @@ class PyRestLib(object):
                 for i in range(len(filenames)):
                     file = Path(filenames[i])
                     if file.exists():
-                        params['file'+str(i)] = (filenames[i], open(filenames[i],'rb'))
+                        params['file'+str(i)] = (filenames[i],
+                                                 open(filenames[i],'rb'))
             encoded_data = MultipartEncoder(params)
             upload_data = MultipartEncoderMonitor(encoded_data)
             return upload_data

@@ -1,4 +1,4 @@
-import os
+import os,sys
 import logging
 import datetime
 import time
@@ -10,8 +10,13 @@ class Rest_Logger():
     time_value = time.time()
     tf = datetime.datetime.fromtimestamp(
         time_value).strftime('%Y-%m-%d_%H-%M-%S')
-    conf_obj = parse_yaml.Yamlparser()
+    cw = os.getcwd()
+    b = os.path.join(cw,'resources')
+    # log_config = os.path.abspath('../pyRestAuto/resources/logging.yaml')
+    log_config = b+'\logging.yaml'
+    conf_obj = parse_yaml.Yamlparser(filename=log_config)
     yaml_data = conf_obj.get_data()
+    print(yaml_data,'logging config data')
     log_levels = {'DEBUG': 10, 'INFO': 20, 'WARNING': 30, 'ERROR': 40,
                   'CRITICAL': 50, 'OFF': 0}
 
@@ -26,8 +31,11 @@ class Rest_Logger():
             self.filename = self.dir+str(self.tf)+'.log'
             self.file = os.path.abspath(self.filename)
         else:
+            print('in else')
             # Checking and creating pyRest_logs dir if not present
-            self.dir1 = os.path.abspath('../pyRestAuto/pyRest_logs/')
+            self.dir1 = os.path.join(self.cw,'pyRest_logs')
+            print(self.dir1,'logs dir')
+            # self.dir1 = os.path.abspath('../pyRestAuto/pyRest_logs/')
             if not os.path.exists(self.dir1):
                 os.makedirs(self.dir1)
             self.filename = self.dir1+'/pyrestlogs_'+str(self.tf)+'.log'
@@ -53,7 +61,7 @@ class Rest_Logger():
             fh.setFormatter(formatter)
             rh = RotatingFileHandler(self.filename, maxBytes=10000,
                                      backupCount=1)
-            rh.setLevel(self.log_level)
+            rh.setLevel(logging.ERROR)
             # add the handlers to logger
             self.logger.addHandler(ch)
             self.logger.addHandler(fh)

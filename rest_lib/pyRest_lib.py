@@ -1,31 +1,35 @@
 import requests
 import traceback
-from common_lib import parse_yaml, json_parser, logger
+from common_lib import json_parser, logger, parse_yaml
 from requests.auth import HTTPDigestAuth, HTTPBasicAuth
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 from pathlib import Path
+import sys
 
 
 
 class PyRestLib(object):
     response_timeout = None
-    conf_obj = parse_yaml.Yamlparser()
+    # conf_obj = parse_test.testparser()
     json_obj = json_parser.JsonParser()
     log_obj = logger.Rest_Logger()
     log = log_obj.get_logger('restLib')
-    yaml_data = conf_obj.get_data()
+    # test_data = conf_obj.get_data()
     session = False
 
-    def __init__(self,url=None):
+    def __init__(self, url=None, file_path=None):
         # self.log.info('************* Test started ************')
+
+        self.test_data = self.__check_file(file_path)
         if url:
             self.url = url
         else:
-            self.url = self.yaml_data['url']
-        self.auth = self.yaml_data['auth']
-        self.auth_type = self.yaml_data['auth_type']
-        self.username = self.yaml_data['auth_details']['username']
-        self.password = self.yaml_data['auth_details']['password']
+            self.url = self.test_data['url']
+        self.auth_type = self.test_data['Authentication_Type']
+        self.username = self.test_data[self.auth_type]['username']
+        self.password = self.test_data[self.auth_type]['password']
+
+
 
     def upload_data(self, path,**args):
         """ Send request with single or multiple file uploads
@@ -106,17 +110,16 @@ class PyRestLib(object):
             self.log.info('************* GET request URL is {} ************'
                           '*'.format(url_path))
             # Checking authentication flog.
-            if self.auth is True:
-                self.headers = self.yaml_data["headers"]
-                if self.auth_type == 'HTTPDigestAuth':
-                    self.log.info('Authentication type is HTTPDigestAuth')
-                    res = req.get(url_path, params=parameters,
+            self.headers = self.test_data["headers"]
+            if self.auth_type == 'HTTPDigestAuth':
+                self.log.info('Authentication type is HTTPDigestAuth')
+                res = req.get(url_path, params=parameters,
                                        headers=self.headers,
                                        auth=HTTPDigestAuth(self.username,
                                                            self.password))
-                elif self.auth_type == 'HTTPBasicAuth':
-                    self.log.info('Authentication type is HTTPBasicAuth')
-                    res = req.get(url_path, params=parameters,
+            elif self.auth_type == 'HTTPBasicAuth':
+                self.log.info('Authentication type is HTTPBasicAuth')
+                res = req.get(url_path, params=parameters,
                                        headers=self.headers,
                                        auth=HTTPBasicAuth(self.username,
                                                           self.password))
@@ -165,7 +168,7 @@ class PyRestLib(object):
                 req = requests
             # headers = self.headers
             # Adding files to POST parameters
-            self.headers = self.yaml_data["headers"]
+            self.headers = self.test_data["headers"]
             if file_paths:
                 upload_data = self.__upload_files(parameters,file_paths)
                 self.headers ['Content-Type'] = upload_data.content_type
@@ -178,20 +181,19 @@ class PyRestLib(object):
 
 
             # Checking authentication flag to send auth details.
-            if self.auth is True:
-                if self.auth_type == 'HTTPDigestAuth':
-                    res = req.post(url_path, data=parameters,
+            if self.auth_type == 'HTTPDigestAuth':
+                res = req.post(url_path, data=parameters,
                                         headers=self.headers,
                                         auth=HTTPDigestAuth(self.username,
                                                             self.password))
-                elif self.auth_type == 'HTTPBasicAuth':
+            elif self.auth_type == 'HTTPBasicAuth':
                     # self.json_data = self.json_obj.dump_json_data(parameters)
-                    res = req.post(url_path, data=parameters,
+                res = req.post(url_path, data=parameters,
                                         headers=self.headers,
                                         auth=HTTPBasicAuth(self.username,
                                                            self.password))
-                else:
-                    res = req.post(url_path, data=parameters,
+            else:
+                res = req.post(url_path, data=parameters,
                                         headers=self.headers)
             res_status_code = res.status_code
             res_data = res.text
@@ -231,15 +233,14 @@ class PyRestLib(object):
             self.log.info('************* DElETE request URL is {}  '
                           '*************'.format(url_path))
             # Checking authentication flog.
-            if self.auth is True:
-                self.headers = self.yaml_data["headers"]
-                if self.auth_type == 'HTTPDigestAuth':
-                    res = req.delete(url_path,
+            self.headers = self.test_data["headers"]
+            if self.auth_type == 'HTTPDigestAuth':
+                res = req.delete(url_path,
                                           headers=self.headers,
                                           auth=HTTPDigestAuth(self.username,
                                                               self.password))
-                elif self.auth_type == 'HTTPBasicAuth':
-                    res = req.delete(url_path,
+            elif self.auth_type == 'HTTPBasicAuth':
+                res = req.delete(url_path,
                                           auth=HTTPBasicAuth(self.username,
                                                              self.password))
             else:
@@ -278,12 +279,11 @@ class PyRestLib(object):
                 req = requests
             response = {}
             url_path = self.url + path
-            self.headers = self.yaml_data["headers"]
+            self.headers = self.test_data["headers"]
             self.log.info('*************PUT request URL is {} '
                           '*************'.format(url_path))
             # Checking authentication flag to send auth details.
-            if self.auth is True:
-                self.headers = self.yaml_data["headers"]
+            self.headers = self.test_data["headers"]
             if self.auth_type == 'HTTPDigestAuth':
                 res = req.put(url_path, data=parameters,
                                    headers=self.headers,
@@ -327,12 +327,12 @@ class PyRestLib(object):
         """
 
         try:
-            # Getting session parameter from config.yaml file
+            # Getting session parameter from config.test file
             sess = requests.Session()
             # Getting authentication & cookie header details from config
-            auth_user = self.yaml_data['cookie_auth']['username']
-            auth_pass = self.yaml_data['cookie_auth']['password']
-            cookie_headers = self.yaml_data['cookie_header']
+            auth_user = self.test_data['cookie_auth']['username']
+            auth_pass = self.test_data['cookie_auth']['password']
+            cookie_headers = self.test_data['cookie_header']
             if auth_user :
                 # Adding session authentication details
                 sess.auth = (auth_user, auth_pass)
@@ -362,7 +362,7 @@ class PyRestLib(object):
             self.log.exception(
                 "Got Exception when uploading file {}".format(e))
 
-    # This method is not requeired
+    # This method is not required. Deprecated
     def __http_basic_auth(self, user, password):
         """
         creates a
@@ -371,3 +371,24 @@ class PyRestLib(object):
         :return:
         """
         pass
+
+    def get_logObj(self):
+        # returns logger object
+        return self.log
+
+    def get_jsonObj(self):
+        # return json object
+        return self.json_obj
+
+    def get_confObj(self):
+        # return test config object
+        return self.conf_obj
+
+    def __check_file(self,file):
+        try:
+            obj = parse_yaml.Yamlparser(filename=file)
+            data = obj.get_data()
+            return data
+        except Exception as e:
+            self.log.exception('Got error in yaml file {}'.format(e))
+            sys.exit(1)

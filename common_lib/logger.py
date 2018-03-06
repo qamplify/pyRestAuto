@@ -13,7 +13,7 @@ class Rest_Logger():
     cw = os.getcwd()
     b = os.path.join(cw,'resources')
     # log_config = os.path.abspath('../pyRestAuto/resources/logging.yaml')
-    log_config = b+'\logging.yaml'
+    log_config = b+'//logging.yaml'
     conf_obj = parse_yaml.Yamlparser(filename=log_config)
     yaml_data = conf_obj.get_data()
     print(yaml_data,'logging config data')

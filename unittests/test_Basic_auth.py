@@ -6,7 +6,7 @@ class Test_BasicAuth(unittest.TestCase):
 
     def setUp(self):
         # Getting test data location
-        file = os.path.abspath('resources\\config.yaml')
+        file = os.path.abspath('resources//config.yaml')
         # Creating object for PyRestLib
         self.rest_obj = pyRest_lib.PyRestLib(file_path=file)
         # Getting logger object

@@ -58,6 +58,21 @@ class Test_BasicAuth(unittest.TestCase):
                             parameters=self.json.dump_json_data(gist_data))
         self.assertEqual(response['code'],201)
 
+        verify_desc = self.json.get_key_value(response['data'],'description')
+        self.assertEqual(verify_desc,'This is sample gist. Testing pyRestAuto')
+
+    # def test_post_another_gist(self):
+    #     """
+    #     Posting a GIST data to git hub
+    #     """
+    #     self.log.info('Testing gist upload data...')
+    #     path = '/gists'
+    #     gist_data = os.path.join(os.getcwd(),'TestData','data.json')
+    #     response = self.rest_obj.send_request(path, method_name='POST',
+    #                                           )
+    #     self.assertEqual(response['code'], 201)
+
+
 
     def test_start_gist(self):
         path = '/gists/16d4474f9318c6ae1d373070a7f09cc7/star'

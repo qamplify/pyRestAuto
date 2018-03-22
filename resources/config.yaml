@@ -20,9 +20,9 @@ HTTPDigestAuth:
 Session:
   cookie_header:
     header: 'sample cookie'
-  cookie_auth:
-    username: 'user'
-    password: 'password'
+  Auth: False
+  username: 'user'
+  password: 'password'
 JWT:
   secret: null
   algorithm: null

@@ -1,0 +1,6 @@
+#Loglevels DEBUG/INFO/ERROR/WARNING/CRITICAL/OFF
+log_level: INFO
+# Default logs will be placed in pyRest_logs directory if log_directory is not given.
+log_directory: null
+# Default value will be 1kb
+log_filesize: 1kb

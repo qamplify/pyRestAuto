@@ -1,41 +1,40 @@
 # URL of system under test with ip/domain:port
-url : https://api.plivo.com/v1
+url : https://api.github.com
 # Below are used for REST API authentication.. Note: Structure should not be modifie.
 
-auth : True
-# Auth type should be HTTPBasicAuth or HTTPDigestAuth
-auth_type : HTTPBasicAuth
-# Need to provide user credentials as username,password
-#TODO need to change the format as username: & value:
-auth_details :
-  username: MAZJJMYZU5ODA2YZNKYZ
-  password: ZjBhYzkyMzFmNGY3N2JlNWFjYzgzYzIyZDU3Yzgz
-
-#Loglevels DEBUG/INFO/ERROR/WARNING/CRITICAL/OFF
-log_level: INFO
-# Default logs will be placed in pyRest_logs directory if log_directory is not given.
-log_directory:
-# Default value will be 1kb
-log_filesize:
-
-
-#Make rest_header when you want to send any custom headers
-# Need to add headers as
-headers:
-  "Content-Type": "application/json"
-
-
-# Sessions(Cookie), Cookies will be sent automatically in all subsequent
-#   requestswhen session is True
-cookie_header:
-  "x-test": "true"
-  "x-test1": "This is testing cookie"
-cookie_auth:
+#auth : True
+## Auth type should be HTTPBasicAuth or HTTPDigestAuth
+#auth_type : HTTPBasicAuth
+## Need to provide user credentials as username,password
+#auth_details :
+#  username: elegant080449@gmail.com
+#  password: mi@redmi1s
+# Authentication types
+Authentication_Type: HTTPBasicAuth
+HTTPBasicAuth:
+  username: elegant080449@gmail.com
+  password: mi@redmi1s
+HTTPDigestAuth:
+  username: null
+  password: null
+Session:
+  cookie_header:
+    header: 'sample cookie'
+  Auth: False
   username: 'user'
   password: 'password'
+JWT:
+  secret: null
+  algorithm: null
 
+# Oauth2 authorization implementation parameters
+Oauth:
+  client_id: null
+  client_secret: null
+  auth_url: null
+  token_url: null
 
-
-
-
-
+#Make rest_header when you want to send any custom headers
+headers:
+  "Content-Type": "application/json"
+Response_wait_time: null

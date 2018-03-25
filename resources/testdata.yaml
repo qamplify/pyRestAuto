@@ -1,0 +1,38 @@
+# URL of system under test with ip/domain:port
+url : https://api.plivo.com/v1
+
+#Loglevels DEBUG/INFO/ERROR/WARNING/CRITICAL/OFF
+log_level: INFO
+# Default logs will be placed in pyRest_logs directory if log_directory is not given.
+log_directory:
+# Default value will be 1kb
+log_filesize:
+
+# CUSTOM HEADERS
+content_headers:
+    "Content-Type": "application/json"
+# Sessions(Cookie), Cookies will be sent automatically in all subsequent
+#   requestswhen session is True
+cookie_header:
+    "x-test": "true"
+    "x-test1": "This is testing cookie"
+
+auth_HTTP: True
+auth_type_http:
+    "username": "MAZJJMYZU5ODA2YZNKYZ"
+    "password": "ZjBhYzkyMzFmNGY3N2JlNWFjYzgzYzIyZDU3Yzgz"
+
+auth_cookie: True
+auth_type_cookies :
+    "username": "user"
+    "password": "password"
+
+auth_jwt: True
+auth_type_jwt :
+    "username": "user"
+    "password": "password"
+
+auth_oauth: True
+auth_type_oauth2.0 :
+    "username": "user"
+    "password": "password"

@@ -216,7 +216,7 @@ Status: 200 OK
   }
 ]
 ```
-Unittest for sending GET request and verifying response `data` & `status code`.
+Unittest for sending GET request and verifying response `data` & `status code` .
 ```python
     def test_get_following(self):
         path = '/user/following'

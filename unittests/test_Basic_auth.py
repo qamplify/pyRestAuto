@@ -8,7 +8,7 @@ class Test_BasicAuth(unittest.TestCase):
         # Getting test data location
         file = os.path.abspath('resources//config.yaml')
         # Creating object for PyRestLib
-        self.rest_obj = pyRest_lib.PyRestLib(file_path=file)
+        self.rest_obj = pyRest_lib.PyRestLib(file_path=file,auth='HTTPBasicAuth')
         # Getting logger object
         self.log = self.rest_obj.get_logObj()
         # Getting json object
@@ -63,16 +63,15 @@ class Test_BasicAuth(unittest.TestCase):
 
     # def test_post_another_gist(self):
     #     """
-    #     Posting a GIST data to git hub
+    #     Testing with passing json file
     #     """
-    #     self.log.info('Testing gist upload data...')
     #     path = '/gists'
-    #     gist_data = os.path.join(os.getcwd(),'TestData','data.json')
+    #     gist_json_file = os.path.join(os.getcwd(),'TestData','data.json')
+    #     params = self.json.dump_json_data(self.json.json_file_to_jsondata(gist_json_file))
+    #     self.log.info(params,type(params))
     #     response = self.rest_obj.send_request(path, method_name='POST',
-    #                                           )
+    #                                           parameters=params)
     #     self.assertEqual(response['code'], 201)
-
-
 
     def test_start_gist(self):
         path = '/gists/16d4474f9318c6ae1d373070a7f09cc7/star'

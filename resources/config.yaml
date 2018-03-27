@@ -1,16 +1,9 @@
 # URL of system under test with ip/domain:port
 url : https://api.github.com
-# Below are used for REST API authentication.. Note: Structure should not be modifie.
+# Below are used for REST API authentication.. Note: Structure should not be modified.
 
-#auth : True
-## Auth type should be HTTPBasicAuth or HTTPDigestAuth
-#auth_type : HTTPBasicAuth
-## Need to provide user credentials as username,password
-#auth_details :
-#  username: elegant080449@gmail.com
-#  password: mi@redmi1s
 # Authentication types
-Authentication_Type: HTTPBasicAuth
+Authentication_Type: null
 HTTPBasicAuth:
   username: elegant080449@gmail.com
   password: mi@redmi1s

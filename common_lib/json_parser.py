@@ -2,6 +2,7 @@ import simplejson as json
 import traceback
 from json_digger.json_digger import JsonDigger as JD
 from common_lib import logger
+import os
 
 class JsonParser(object):
     logger1 = logger.Rest_Logger()
@@ -34,6 +35,30 @@ class JsonParser(object):
     def dump_json_data(self, data):
         #Returning python data type
         return json.dumps(data)
+
+    def json_file(self,file):
+        """
+        This method takes input as json file and return json data.
+        :@param file:
+
+        :return json data
+        """
+        try:
+            # Checking file path
+            if os.path.isfile(file):
+                # Getting file content
+                file = open(file,"r")
+                # Getting json file to python dictionary
+                py_data = json.load(file)
+                # Converting python dict to json data.
+                json_data = self.dump_json_data(py_data)
+                return json_data
+            else:
+                self.log.info("File not found {}".format(file))
+                return "File not exists"
+        except Exception as e:
+            self.log.info('Got Exception in json_file method {}'.format(e))
+
 
     def parse(self):
         pass

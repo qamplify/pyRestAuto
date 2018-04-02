@@ -3,7 +3,6 @@ import traceback
 from common_lib import json_parser, logger, parse_yaml
 from requests.auth import HTTPDigestAuth, HTTPBasicAuth
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
-from requests_toolbelt import exceptions
 from requests_toolbelt.downloadutils import stream
 import sys
 import random
@@ -19,7 +18,12 @@ class PyRestLib(object):
     session = False
 
     def __init__(self, url=None, file_path=None, auth=None):
-        # self.log.info('************* Test started ************')
+        """
+        @:param url:
+        @:param file_path
+        @:param auth
+
+        """
 
         self.test_data = self.__check_file(file_path)
 
@@ -38,7 +42,7 @@ class PyRestLib(object):
             self.password = self.test_data[self.auth_type]['password']
         elif self.Auth_type == 'Session':
             self.session = True
-            self.auth_type = None
+            self.auth_type = self.Auth_type
             self.req_session = self.__create_session(self.test_data)
         elif self.Auth_type == 'JWT':
             self.auth_type = self.Auth_type
@@ -104,7 +108,7 @@ class PyRestLib(object):
         except Exception as e:
             self.log.exception('Got exception in upload request {}'.format(e))
 
-    def send_request(self, path, parameters=None, method_name=None,**kwargs):
+    def send_request(self, path,method_name,**kwargs):
         """
         :param path: url path
         :param parameters: Request parameters
@@ -116,13 +120,13 @@ class PyRestLib(object):
 
         try:
             if method_name == 'GET':
-                response = self.__get_request(path, parameters=parameters,**kwargs)
+                response = self.__get_request(path, **kwargs)
                 return response
             elif method_name == 'POST':
-                response = self.__post_request(path, parameters=parameters,**kwargs)
+                response = self.__post_request(path,**kwargs)
                 return response
             elif method_name == 'PUT':
-                response = self.__update_request(path, parameters=parameters,**kwargs)
+                response = self.__update_request(path,**kwargs)
                 return response
             elif method_name == 'DELETE':
                 response = self.__delete_request(path,**kwargs)
@@ -130,12 +134,13 @@ class PyRestLib(object):
             else:
                 return 'Method name should be GET/POST/PUT/DELETE. eg:' \
                        ' method_name = "GET"'
+                sys.exit()
 
         except Exception as e:
             self.log.exception('Got exception in sendrequest method '
                                '{}'.format(e))
 
-    def __get_request(self, path, parameters=None, **args):
+    def __get_request(self, path, **args):
         """ Sending GET request.
         :param path: path for get request api
         :param headers: headers parameter for adding custom headers
@@ -148,12 +153,16 @@ class PyRestLib(object):
             else:
                 req = requests
             response = {}
+            parameters = args.get('parameters',None)
+            rheaders = args.get('headers',None)
             # Framing URL request.
             url_path = self.url + path
             self.log.info('************* GET request URL is {} ************'
                           '*'.format(url_path))
             # Checking authentication flog.
             self.headers = self.test_data["headers"]
+            if rheaders:
+                self.headers.update(rheaders)
             print(self.auth_type)
             if self.auth_type == 'HTTPDigestAuth':
                 self.log.info('Authentication type is HTTPDigestAuth')
@@ -168,14 +177,14 @@ class PyRestLib(object):
                               auth=HTTPBasicAuth(self.username,
                                                  self.password))
 
-            elif test_cookies:
-                 res = req.get(url_path, params=parameters,
+            elif self.auth_type == 'Session':
+                res = req.get(url_path, params=parameters,
                                   headers=self.headers,cookies=test_cookies)
             else:
                 res = req.get(url_path, params=parameters,
                               headers=self.headers)
             response['code'] = res.status_code
-            response['data'] = res.text
+            response['data']  = res.text
             response['headers'] = res.headers
             self.log.info(
                 'Received response code is {}'.format(res.status_code))
@@ -191,7 +200,7 @@ class PyRestLib(object):
             self.log.exception(
                 "GET request {} Failed with exception {}".format(url_path, e))
 
-    def __post_request(self, path, parameters=None, file_paths=None,**kwargs):
+    def __post_request(self, path,**kwargs):
         """
         Posts the request to defined url.
         :param path: path for get request api
@@ -206,22 +215,26 @@ class PyRestLib(object):
         # 5. Read Response code in to a variable (Data type TBD)
         # 6. Read Http headers in to another variable
         try:
+            parameters = kwargs.get('parameters',None)
+            file_paths = kwargs.get('file_paths',None)
+            rheaders = kwargs.get('headers',None)
             if self.session:
                 req = self.req_session
             else:
                 req = requests
-            # headers = self.headers
             # Adding files to POST parameters
             self.headers = self.test_data["headers"]
+            if rheaders:
+                self.headers.update(rheaders)
             if file_paths:
                 upload_data = self.__upload_files(parameters, file_paths)
                 self.headers['Content-Type'] = upload_data.content_type
                 parameters = upload_data
-            self.log.info('Parameters are {}'.format(parameters))
             response = {}
             url_path = self.url + path
             self.log.info('*************  POST request URL is {}  '
                           '*************'.format(url_path))
+            self.log.info('POST request parameters... {}'.format(parameters))
 
             # Checking authentication flag to send auth details.
             if self.auth_type == 'HTTPDigestAuth':

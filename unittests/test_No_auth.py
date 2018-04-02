@@ -30,6 +30,15 @@ class Test_RestAPIs(unittest.TestCase):
         code = response['code']
         self.assertEqual(code, 200)
 
+    def test_post_request_json_file(self):
+        file_path = os.path.join(os.getcwd(),'TestData','data.json')
+        post_params = self.json.json_file(file_path)
+        response = self.rest.send_request('/post', method_name='POST',
+                                          parameters=post_params)
+        code = response['code']
+        self.assertEqual(code, 200)
+
+
     def test_put_request(self):
         response = self.rest.send_request('/put',method_name='PUT')
         code = response['code']

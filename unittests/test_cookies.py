@@ -7,7 +7,7 @@ class Test_cookie(unittest.TestCase):
         # Getting test data location
         file = os.path.abspath('resources//config.yaml')
         # Creating object for PyRestLib
-        self.rest_obj = pyRest_lib.PyRestLib(url='http://httpbin.org/',
+        self.rest_obj = pyRest_lib.PyRestLib(url='http://httpbin.org',
                                              file_path=file,auth='Session')
         # Getting logger object
         self.log = self.rest_obj.get_logObj()
@@ -35,7 +35,6 @@ class Test_cookie(unittest.TestCase):
         self.log.info('Sending custom cookie')
         response = self.rest_obj.send_request('/cookies',method_name='GET',
                                               cookies={'sample':'test_cookie'})
-
         data = response['data']
         res_cookie = self.json.get_key_value(data,'sample')
         # Verifying response cookie data
